@@ -1,0 +1,3 @@
+= Flourish Alpha Repository
+
+This repository holds code that is intended to be merged with Flourish, but needs some more work, or validation on real-world projects. Please be sure to use the [[http://flourishlib.com/newticket|Flourish ticketing system]] to report bugs or suggest enhancements. 

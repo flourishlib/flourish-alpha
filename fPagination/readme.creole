@@ -1,0 +1,48 @@
+= fPagination
+
+While Flourish tries to stay away from tasks that involve customizable HTML, pagination is a common task that could use some nice integration with fRecordSet. This class attempts to abstract all of the HTML by allowing for the creation of different templates. The templates use a syntax compatible with [[http://www.twig-project.org/|Twig]] for variable replacement and filtering.
+
+== Instantiation
+
+An fPagination object can be instantiated by an fRecordSet of `$records` as the first parameter. All of the necessary information can be retrieved from the record set.
+
+{{{
+// Create the paginator from the information embedded in the record set
+$users = fRecordSet::build('User', array('status=' => 'Active'), array('name' => 'asc'), 5, 2);
+$paginator = new fPagination($users);
+}}}
+
+Alternatively, a total number of `$records`, the number of records `$per_page`, and the `$page` being displayed may be passed.
+
+{{{
+$total_users = 20;
+$per_page    = 5;
+$page        = 2;
+$paginator = new fPagination($total_users, $per_page, $page);
+}}}
+
+== Usage
+
+The primary functionality of the paginator is to print out summary information about the current page of records, and links to other pages. The summary information is printed by calling ::printInfo().
+
+{{{
+$paginator->printInfo();
+}}}
+
+If a template other than the default is desired, pass the `$template` name as the first parameter.
+
+{{{
+$paginator->printInfo('thin');
+}}}
+
+The method ::showLinks() will display links to the other pages of results, if there is more than one page of records.
+
+{{{
+$paginator->showLinks();
+}}}
+
+Like ::printInfo(), ::showLinks() optionally accepts the name of the template to use.
+
+{{{
+$paginator->showLinks('thin');
+}}}
