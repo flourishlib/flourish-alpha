@@ -329,16 +329,16 @@ class fPagination
 		
 		} else {
 			$start_separator = TRUE;
-			$start_page      = $page - self::$templates[$template]['size'];
+			$start_page      = $page - (self::$templates[$template]['size'] - 2);
 			if ($start_page <= 2) {
 				$start_separator = FALSE;
-				$start_page = ($start_page == 2) ? 3 : 1;
+				$start_page = 1;
 			}
 			$end_separator = TRUE;
-			$end_page      = $page + self::$templates[$template]['size'];
+			$end_page      = $page + (self::$templates[$template]['size'] - 2);
 			if ($end_page >= $total_pages - 1) {
 				$end_separator = FALSE;
-				$end_page = ($end_page == $total_pages - 1) ? $total_pages - 2 : $total_pages;
+				$end_page = $total_pages;
 			}
 		}
 		
