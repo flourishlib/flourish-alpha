@@ -2,7 +2,7 @@
 /**
  * Prints pagination links for fRecordSet or other paginated records
  * 
- * @copyright  Copyright (c) 2010 Will Bond
+ * @copyright  Copyright (c) 2010-2011 Will Bond
  * @author     Will Bond [wb] <will@flourishlib.com>
  * @license    http://flourishlib.com/license
  */
@@ -24,7 +24,8 @@ class fPagination
 	static private $filters = array(
 		'inflect',
 		'lower',
-		'urlencode'
+		'url_encode',
+		'humanize'
 	);
 	
 	/**
@@ -96,8 +97,10 @@ class fPagination
 	 * add a `|` and the filter name after the variable name, in the form
 	 * `{{ variable|filter }}`. The following filters are available:
 	 * 
-	 *  - `inflect`: if the total number of records is not 1, pluralize the variable - this only works for nouns
-	 *  - `lower`:   converts the contents of the variable to lower case
+	 *  - `inflect`:    if the total number of records is not 1, pluralize the variable - this only works for nouns
+	 *  - `lower`:      converts the contents of the variable to lower case
+	 *  - `url_encode`: encode the value for inclusion in a URL
+	 *  - `humanize`:   converts a `underscore_notation` or `CamelCase` string to a string with spaces between words and in `Title Caps`
 	 * 
 	 * Filters can be combined, in which case they are list one after the other
 	 * in the form `{{ variable|filter_1|filter_2 }}`.
@@ -175,6 +178,30 @@ class fPagination
 		fORM::registerRecordSetMethod('printInfo', self::printRecordSetInfo);
 		fORM::registerRecordSetMethod('showLinks', self::showRecordSetLinks);
 	}
+
+
+	/**
+	 * Overlays user data over info from the record set
+	 *
+	 * @param array        $data   The user data
+	 * @param string|array $class  The class or classes present in the record set
+	 * @return array  The merged data
+	 */
+	static private function extendRecordSetInfo($data, $class)
+	{
+		if (is_array($class)) {
+			$record_name = array_map(array('fORM', 'getRecordName'), $class);
+		} else {
+			$record_name = fORM::getRecordName($class);
+		}
+		return array_merge(
+			array(
+				'class' => $class,
+				'record_name' => $record_name
+			),
+			$data
+		);
+	}
 	
 	
 	/**
@@ -191,8 +218,10 @@ class fPagination
 	 */
 	static public function printRecordSetInfo($object, $class, &$records, $method_name, $parameters)
 	{
-		$template = count($parameters[0]) < 1 ? 'default' : $parameters[0];
-		self::printTemplatedInfo($template, array(), $object->getPage(), $object->getLimit(), $object->count(TRUE));
+		$template = count($parameters) < 1 ? 'default' : $parameters[0];
+		$data     = count($parameters) < 2 ? array() : $parameters[1];
+		$data     = self::extendRecordSetInfo($data, $class);
+		self::printTemplatedInfo($template, $data, $object->getPage(), $object->getLimit(), $object->count(TRUE));
 	}
 	
 	
@@ -239,7 +268,8 @@ class fPagination
 		self::$filters = array(
 			'inflect',
 			'lower',
-			'urlencode'
+			'url_encode',
+			'humanize'
 		);
 		self::$templates = array(
 			'default' => array(
@@ -272,8 +302,10 @@ class fPagination
 	 */
 	static public function showRecordSetLinks($object, $class, &$records, $method_name, $parameters)
 	{
-		$template = count($parameters[0]) < 1 ? 'default' : $parameters[0];
-		return self::showTemplatedLinks($template, array(), $object->getPage(), $object->getLimit(), $object->count(TRUE));
+		$template = count($parameters) < 1 ? 'default' : $parameters[0];
+		$data     = count($parameters) < 2 ? array() : $parameters[1];
+		$data     = self::extendRecordSetInfo($data, $class);
+		return self::showTemplatedLinks($template, $data, $object->getPage(), $object->getLimit(), $object->count(TRUE));
 	}
 	
 	
@@ -467,6 +499,8 @@ class fPagination
 						$value = fUTF8::lower($value);
 					} elseif ($filter == 'url_encode') {
 						$value = urlencode($value);
+					} elseif ($filter == 'humanize') {
+						$value = fGrammar::humanize($value);
 					}
 				}
 			}
